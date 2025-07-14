@@ -12,24 +12,29 @@
       padding: 30px;
       color: #333;
     }
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #222;
+    }
+    h1 {
       margin-bottom: 40px;
       font-size: 2.5rem;
     }
-    .filter-box {
+    .filter-box, .form-box {
       display: flex;
       justify-content: center;
       gap: 10px;
       margin-bottom: 30px;
       flex-wrap: wrap;
     }
-    input, select, button {
+    input, select, textarea, button {
       padding: 10px;
       font-size: 1rem;
       border-radius: 5px;
       border: 1px solid #ccc;
+    }
+    textarea {
+      resize: vertical;
     }
     button {
       background-color: #333;
@@ -73,11 +78,11 @@
       h1 {
         font-size: 1.8rem;
       }
-      input, select, button {
+      input, select, button, textarea {
         width: 100%;
         margin-bottom: 10px;
       }
-      .filter-box {
+      .filter-box, .form-box {
         flex-direction: column;
         align-items: stretch;
       }
@@ -118,6 +123,22 @@
       </tbody>
     </table>
   </div>
+
+  <h2>Submit a New Behavior Entry</h2>
+  <form id="incidentForm" class="form-box">
+    <input type="date" id="newDate" required />
+    <input type="text" id="newPlatform" placeholder="Platform" required />
+    <input type="text" id="newBehavior" placeholder="Behavior" required />
+    <input type="text" id="newTarget" placeholder="Target" required />
+    <textarea id="newSummary" placeholder="Summary" required></textarea>
+    <input type="url" id="newEvidence" placeholder="Evidence Link" required />
+    <select id="newStatus">
+      <option value="Documented">Documented</option>
+      <option value="Deleted Post">Deleted Post</option>
+      <option value="Ongoing">Ongoing</option>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
 
   <script>
     const data = [
@@ -200,6 +221,22 @@
 
       loadTable(filtered);
     }
+
+    document.getElementById("incidentForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const newEntry = {
+        date: document.getElementById("newDate").value,
+        platform: document.getElementById("newPlatform").value,
+        behavior: document.getElementById("newBehavior").value,
+        target: document.getElementById("newTarget").value,
+        summary: document.getElementById("newSummary").value,
+        evidence: document.getElementById("newEvidence").value,
+        status: document.getElementById("newStatus").value
+      };
+      data.push(newEntry);
+      loadTable(data);
+      this.reset();
+    });
 
     window.onload = () => loadTable(data);
   </script>
