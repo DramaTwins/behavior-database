@@ -1,199 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Behavior Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(to right, #fdfbfb, #ebedee);
-            padding: 30px;
-            color: #333;
-        }
-
-        h1 {
-            text-align: center;
-            color: #222;
-            margin-bottom: 40px;
-            font-size: 2.5rem;
-        }
-
-        .filter-box {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        input, select, button {
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background-color: #333;
-            color: white;
-            cursor: pointer;
-        }
-
-            button:hover {
-                background-color: #555;
-            }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }
-
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            background-color: #222;
-            color: white;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        a {
-            color: #007BFF;
-            text-decoration: none;
-        }
-
-            a:hover {
-                text-decoration: underline;
-            }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Behavior Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #fdfbfb, #ebedee);
+      padding: 30px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+    }
+    .filter-box {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    input, select, button {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      min-width: 700px;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #222;
+      color: white;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    @media screen and (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      input, select, button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .filter-box {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>🧠 Documented Behavior Database</h1>
+  <h1>🧠 Documented Behavior Database</h1>
 
-    <div class="filter-box">
-        <input type="text" id="search" placeholder="Search keywords..." />
-        <select id="behaviorType">
-            <option value="">All Behaviors</option>
-            <option value="Gaslighting">Gaslighting</option>
-            <option value="Smear Campaign">Smear Campaign</option>
-            <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
-            <option value="Contradictory Statements">Contradictory Statements</option>
-            <option value="Victim Playing">Victim Playing</option>
-        </select>
-        <button onclick="filterTable()">Filter</button>
-    </div>
+  <div class="filter-box">
+    <input type="text" id="search" placeholder="Search keywords..." />
+    <select id="behaviorType">
+      <option value="">All Behaviors</option>
+      <option value="Gaslighting">Gaslighting</option>
+      <option value="Smear Campaign">Smear Campaign</option>
+      <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
+      <option value="Contradictory Statements">Contradictory Statements</option>
+      <option value="Victim Playing">Victim Playing</option>
+    </select>
+    <button onclick="filterTable()">Filter</button>
+  </div>
 
+  <div class="table-wrapper">
     <table id="dataTable">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Platform</th>
-                <th>Behavior</th>
-                <th>Target</th>
-                <th>Summary</th>
-                <th>Evidence</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- JS will populate rows here -->
-        </tbody>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Platform</th>
+          <th>Behavior</th>
+          <th>Target</th>
+          <th>Summary</th>
+          <th>Evidence</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS will populate rows here -->
+      </tbody>
     </table>
+  </div>
 
-    <script>
-        const data = [
-            {
-                date: "2023-08-14",
-                platform: "TikTok",
-                behavior: "Gaslighting",
-                target: "Ex-mod: Sarah",
-                summary: "Claimed Sarah was never a mod and was lying, despite several old live videos showing Sarah moderating.",
-                evidence: "https://imgur.com/example1",
-                status: "Documented"
-            },
-            {
-                date: "2024-01-05",
-                platform: "Instagram",
-                behavior: "Smear Campaign",
-                target: "Former friend: Mike",
-                summary: "Made a story calling Mike a 'toxic narcissist' after he left her circle, deleted it within 24 hours.",
-                evidence: "https://imgur.com/example2",
-                status: "Deleted Post"
-            },
-            {
-                date: "2022-11-18",
-                platform: "TikTok",
-                behavior: "Love Bombing & Devaluation",
-                target: "Fan group",
-                summary: "Initially praised fan group for loyalty, then called them stalkers when they asked about missing donations.",
-                evidence: "https://imgur.com/example3",
-                status: "Ongoing"
-            },
-            {
-                date: "2023-03-10",
-                platform: "YouTube",
-                behavior: "Contradictory Statements",
-                target: "General audience",
-                summary: "Said she never claimed to be a therapist, but older video shows her introducing herself as one.",
-                evidence: "https://imgur.com/example4",
-                status: "Documented"
-            },
-            {
-                date: "2024-05-22",
-                platform: "TikTok",
-                behavior: "Victim Playing",
-                target: "Community backlash",
-                summary: "Cried on live saying she was being bullied, minutes after attacking a fan who asked a question.",
-                evidence: "https://imgur.com/example5",
-                status: "Documented"
-            }
-        ];
+  <script>
+    const data = [
+      {
+        date: "2023-08-14",
+        platform: "TikTok",
+        behavior: "Gaslighting",
+        target: "Ex-mod: Sarah",
+        summary: "Claimed Sarah was never a mod and was lying, despite several old live videos showing Sarah moderating.",
+        evidence: "https://imgur.com/example1",
+        status: "Documented"
+      },
+      {
+        date: "2024-01-05",
+        platform: "Instagram",
+        behavior: "Smear Campaign",
+        target: "Former friend: Mike",
+        summary: "Made a story calling Mike a 'toxic narcissist' after he left her circle, deleted it within 24 hours.",
+        evidence: "https://imgur.com/example2",
+        status: "Deleted Post"
+      },
+      {
+        date: "2022-11-18",
+        platform: "TikTok",
+        behavior: "Love Bombing & Devaluation",
+        target: "Fan group",
+        summary: "Initially praised fan group for loyalty, then called them stalkers when they asked about missing donations.",
+        evidence: "https://imgur.com/example3",
+        status: "Ongoing"
+      },
+      {
+        date: "2023-03-10",
+        platform: "YouTube",
+        behavior: "Contradictory Statements",
+        target: "General audience",
+        summary: "Said she never claimed to be a therapist, but older video shows her introducing herself as one.",
+        evidence: "https://imgur.com/example4",
+        status: "Documented"
+      },
+      {
+        date: "2024-05-22",
+        platform: "TikTok",
+        behavior: "Victim Playing",
+        target: "Community backlash",
+        summary: "Cried on live saying she was being bullied, minutes after attacking a fan who asked a question.",
+        evidence: "https://imgur.com/example5",
+        status: "Documented"
+      }
+    ];
 
-        function loadTable(entries) {
-            const tbody = document.querySelector("#dataTable tbody");
-            tbody.innerHTML = "";
-            entries.forEach(entry => {
-                const row = `<tr>
-              <td>${entry.date}</td>
-              <td>${entry.platform}</td>
-              <td>${entry.behavior}</td>
-              <td>${entry.target}</td>
-              <td>${entry.summary}</td>
-              <td><a href="${entry.evidence}" target="_blank">Link</a></td>
-              <td>${entry.status}</td>
-            </tr>`;
-                tbody.innerHTML += row;
-            });
-        }
+    function loadTable(entries) {
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+      entries.forEach(entry => {
+        const row = `<tr>
+          <td>${entry.date}</td>
+          <td>${entry.platform}</td>
+          <td>${entry.behavior}</td>
+          <td>${entry.target}</td>
+          <td>${entry.summary}</td>
+          <td><a href="${entry.evidence}" target="_blank">Link</a></td>
+          <td>${entry.status}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
 
-        function filterTable() {
-            const keyword = document.getElementById("search").value.toLowerCase();
-            const behavior = document.getElementById("behaviorType").value;
+    function filterTable() {
+      const keyword = document.getElementById("search").value.toLowerCase();
+      const behavior = document.getElementById("behaviorType").value;
 
-            const filtered = data.filter(entry => {
-                return (
-                    (!behavior || entry.behavior === behavior) &&
-                    (entry.summary.toLowerCase().includes(keyword) ||
-                        entry.target.toLowerCase().includes(keyword) ||
-                        entry.platform.toLowerCase().includes(keyword))
-                );
-            });
+      const filtered = data.filter(entry => {
+        return (
+          (!behavior || entry.behavior === behavior) &&
+          (entry.summary.toLowerCase().includes(keyword) ||
+           entry.target.toLowerCase().includes(keyword) ||
+           entry.platform.toLowerCase().includes(keyword))
+        );
+      });
 
-            loadTable(filtered);
-        }
+      loadTable(filtered);
+    }
 
-        window.onload = () => loadTable(data);
-    </script>
+    window.onload = () => loadTable(data);
+  </script>
 </body>
 </html>
