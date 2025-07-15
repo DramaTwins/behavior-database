@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Behavior Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase CDN Modules -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
@@ -30,7 +32,26 @@
       loadTable(entries);
     }
 
-    document.getElementById("incidentForm").addEventListener("submit", async function(e) {
+    window.loadTable = function(entries) {
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+      entries.forEach(entry => {
+        const row = `<tr>
+          <td>${entry.date}</td>
+          <td>${entry.platform}</td>
+          <td>${entry.behavior}</td>
+          <td>${entry.target}</td>
+          <td>${entry.summary}</td>
+          <td><a href="${entry.evidence}" target="_blank">Link</a></td>
+          <td>${entry.status}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    };
+
+    window.onload = () => loadEntries();
+
+    window.submitHandler = async function(e) {
       e.preventDefault();
       const newEntry = {
         date: document.getElementById("newDate").value,
@@ -43,16 +64,144 @@
       };
       await addDoc(collection(db, "entries"), newEntry);
       loadEntries();
-      this.reset();
-    });
-
-    window.onload = () => loadEntries();
+      document.getElementById("incidentForm").reset();
+    };
   </script>
+
   <style>
-    /* Styles unchanged for brevity */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #fdfbfb, #ebedee);
+      padding: 30px;
+      color: #333;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #222;
+    }
+
+    .filter-box, .form-box {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    input, select, textarea, button {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    textarea { resize: vertical; }
+
+    button {
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover { background-color: #555; }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      min-width: 700px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #222;
+      color: white;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+
+    tr:hover { background-color: #f1f1f1; }
+
+    a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media screen and (max-width: 768px) {
+      input, select, button, textarea {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .filter-box, .form-box {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <!-- body unchanged -->
+  <h1>🧠 Documented Behavior Database</h1>
+
+  <div class="table-wrapper">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Platform</th>
+          <th>Behavior</th>
+          <th>Target</th>
+          <th>Summary</th>
+          <th>Evidence</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2>Submit a New Behavior Entry</h2>
+  <form id="incidentForm" class="form-box" onsubmit="submitHandler(event)">
+    <input type="date" id="newDate" required />
+    <select id="newPlatform" required>
+      <option value="">Select Platform</option>
+      <option value="TikTok">TikTok</option>
+      <option value="Instagram">Instagram</option>
+      <option value="YouTube">YouTube</option>
+      <option value="Discord">Discord</option>
+      <option value="Facebook">Facebook</option>
+    </select>
+    <select id="newBehavior" required>
+      <option value="">Select Behavior</option>
+      <option value="Gaslighting">Gaslighting</option>
+      <option value="Smear Campaign">Smear Campaign</option>
+      <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
+      <option value="Contradictory Statements">Contradictory Statements</option>
+      <option value="Victim Playing">Victim Playing</option>
+    </select>
+    <input type="text" id="newTarget" placeholder="Target" required />
+    <textarea id="newSummary" placeholder="Summary" required></textarea>
+    <input type="url" id="newEvidence" placeholder="Evidence Link" required />
+    <select id="newStatus">
+      <option value="Documented">Documented</option>
+      <option value="Deleted Post">Deleted Post</option>
+      <option value="Ongoing">Ongoing</option>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
 </body>
 </html>
