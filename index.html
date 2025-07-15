@@ -123,18 +123,6 @@
     <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
   </div>
 
-  <form id="incidentForm" onsubmit="submitHandler(event)" style="max-width: 800px; margin: 0 auto; padding: 20px;">
-    <h2>Submit New Behavior</h2>
-    <label>Date:<br><input type="date" id="newDate" required></label><br><br>
-    <label>Platform:<br><input type="text" id="newPlatform" required></label><br><br>
-    <label>Behavior:<br><input type="text" id="newBehavior" required></label><br><br>
-    <label>Target:<br><input type="text" id="newTarget" required></label><br><br>
-    <label>Summary:<br><textarea id="newSummary" rows="4" required></textarea></label><br><br>
-    <label>Evidence (URL):<br><input type="url" id="newEvidence" required></label><br><br>
-    <label>Status:<br><input type="text" id="newStatus" required></label><br><br>
-    <button type="submit">Submit</button>
-  </form>
-
   <h2 style="text-align:center;">📋 Submitted Entries</h2>
   <div style="overflow-x:auto; max-width:100%; padding: 10px;">
     <table id="dataTable" border="1" cellspacing="0" cellpadding="10" style="width: 100%; border-collapse: collapse;">
@@ -152,5 +140,17 @@
       <tbody></tbody>
     </table>
   </div>
+
+  <form id="incidentForm" onsubmit="submitHandler(event)" style="max-width: 800px; margin: 30px auto 0 auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+    <h2>Submit New Behavior</h2>
+    <label>Date:<br><input type="date" id="newDate" required></label><br><br>
+    <label>Platform:<br><input type="text" id="newPlatform" required></label><br><br>
+    <label>Behavior:<br><input type="text" id="newBehavior" required></label><br><br>
+    <label>Target:<br><input type="text" id="newTarget" required></label><br><br>
+    <label>Summary:<br><textarea id="newSummary" rows="4" required></textarea></label><br><br>
+    <label>Evidence (URL):<br><input type="url" id="newEvidence" required></label><br><br>
+    <label>Status:<br><input type="text" id="newStatus" required></label><br><br>
+    <button type="submit">Submit</button>
+  </form>
 </body>
 </html>
