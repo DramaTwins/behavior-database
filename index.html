@@ -22,6 +22,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    let behaviorChartInstance = null;
+    let platformChartInstance = null;
+
     async function loadEntries() {
       const querySnapshot = await getDocs(collection(db, "entries"));
       const entries = [];
@@ -58,7 +61,10 @@
         platformCounts[entry.platform] = (platformCounts[entry.platform] || 0) + 1;
       });
 
-      new Chart(document.getElementById('behaviorChart'), {
+      if (behaviorChartInstance) behaviorChartInstance.destroy();
+      if (platformChartInstance) platformChartInstance.destroy();
+
+      behaviorChartInstance = new Chart(document.getElementById('behaviorChart'), {
         type: 'bar',
         data: {
           labels: Object.keys(behaviorCounts),
@@ -73,7 +79,7 @@
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      new Chart(document.getElementById('platformChart'), {
+      platformChartInstance = new Chart(document.getElementById('platformChart'), {
         type: 'pie',
         data: {
           labels: Object.keys(platformCounts),
