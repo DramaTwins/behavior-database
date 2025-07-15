@@ -123,6 +123,34 @@
     <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
   </div>
 
-  <!-- rest of the body remains unchanged -->
+  <form id="incidentForm" onsubmit="submitHandler(event)" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h2>Submit New Behavior</h2>
+    <label>Date:<br><input type="date" id="newDate" required></label><br><br>
+    <label>Platform:<br><input type="text" id="newPlatform" required></label><br><br>
+    <label>Behavior:<br><input type="text" id="newBehavior" required></label><br><br>
+    <label>Target:<br><input type="text" id="newTarget" required></label><br><br>
+    <label>Summary:<br><textarea id="newSummary" rows="4" required></textarea></label><br><br>
+    <label>Evidence (URL):<br><input type="url" id="newEvidence" required></label><br><br>
+    <label>Status:<br><input type="text" id="newStatus" required></label><br><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2 style="text-align:center;">📋 Submitted Entries</h2>
+  <div style="overflow-x:auto; max-width:100%; padding: 10px;">
+    <table id="dataTable" border="1" cellspacing="0" cellpadding="10" style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Platform</th>
+          <th>Behavior</th>
+          <th>Target</th>
+          <th>Summary</th>
+          <th>Evidence</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </body>
 </html>
