@@ -51,6 +51,7 @@
           <td>${entry.target}</td>
           <td class="wider-col">${entry.summary}</td>
           <td><a href="${entry.evidence}" target="_blank">Link</a></td>
+          <td>${entry.timestamp ? entry.timestamp : ''}</td>
           <td>${entry.status}</td>
         </tr>`;
         tbody.innerHTML += row;
@@ -68,6 +69,7 @@
         target: document.getElementById("newTarget").value,
         summary: document.getElementById("newSummary").value,
         evidence: document.getElementById("newEvidence").value,
+        timestamp: document.getElementById("newTimestamp").value,
         status: document.getElementById("newStatus").value
       };
       await addDoc(collection(db, "entries"), newEntry);
@@ -289,6 +291,7 @@
             <th>Target</th>
             <th>Summary</th>
             <th>Evidence</th>
+            <th>Timestamp</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -325,6 +328,9 @@
       <label>Summary:<br><textarea id="newSummary" rows="3" required></textarea></label>
       <label>Evidence (URL):<br>
       <input type="url" id="newEvidence" required placeholder="https://">
+      </label>
+      <label>Video Timestamp (optional):<br>
+      <input type="text" id="newTimestamp" placeholder="e.g. 13:42 or 1:10:37">
       </label>
       <label>Status:<br>
         <select id="newStatus" required>
