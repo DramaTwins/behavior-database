@@ -80,7 +80,7 @@
       background-color: #121212;
       color: #e0e0e0;
     }
-    table, input, button {
+    table, input, button, select, textarea {
       transition: background-color 0.3s, color 0.3s;
     }
     body.dark table {
@@ -114,6 +114,52 @@
       background: #333;
       color: white;
     }
+    h1 {
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      font-size: 2.2rem;
+    }
+    form#incidentForm {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      max-width: 800px;
+      margin: 30px auto 0 auto;
+      padding: 20px 32px 28px 32px;
+    }
+    form#incidentForm label {
+      font-weight: 500;
+    }
+    form#incidentForm input, form#incidentForm select, form#incidentForm textarea {
+      margin-top: 4px;
+      margin-bottom: 18px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    form#incidentForm button {
+      display: block;
+      margin: 0 auto;
+      padding: 12px 28px;
+      background: #4CAF50;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    form#incidentForm button:hover {
+      background: #388e3c;
+    }
+    @media (max-width: 700px) {
+      form#incidentForm { padding: 14px 2vw; }
+    }
   </style>
 </head>
 <body>
@@ -141,15 +187,41 @@
     </table>
   </div>
 
-  <form id="incidentForm" onsubmit="submitHandler(event)" style="max-width: 800px; margin: 30px auto 0 auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-    <h2>Submit New Behavior</h2>
-    <label>Date:<br><input type="date" id="newDate" required></label><br><br>
-    <label>Platform:<br><input type="text" id="newPlatform" required></label><br><br>
-    <label>Behavior:<br><input type="text" id="newBehavior" required></label><br><br>
-    <label>Target:<br><input type="text" id="newTarget" required></label><br><br>
-    <label>Summary:<br><textarea id="newSummary" rows="4" required></textarea></label><br><br>
-    <label>Evidence (URL):<br><input type="url" id="newEvidence" required></label><br><br>
-    <label>Status:<br><input type="text" id="newStatus" required></label><br><br>
+  <form id="incidentForm" onsubmit="submitHandler(event)">
+    <h2 style="text-align:center">Submit New Behavior</h2>
+    <label>Date:<br><input type="date" id="newDate" required></label>
+    <label>Platform:<br>
+      <select id="newPlatform" required>
+        <option value="">Select Platform</option>
+        <option value="TikTok">TikTok</option>
+        <option value="Instagram">Instagram</option>
+        <option value="YouTube">YouTube</option>
+        <option value="Discord">Discord</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Other">Other</option>
+      </select>
+    </label>
+    <label>Behavior:<br>
+      <select id="newBehavior" required>
+        <option value="">Select Behavior</option>
+        <option value="Gaslighting">Gaslighting</option>
+        <option value="Smear Campaign">Smear Campaign</option>
+        <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
+        <option value="Contradictory Statements">Contradictory Statements</option>
+        <option value="Victim Playing">Victim Playing</option>
+        <option value="Other">Other</option>
+      </select>
+    </label>
+    <label>Target:<br><input type="text" id="newTarget" required></label>
+    <label>Summary:<br><textarea id="newSummary" rows="4" required></textarea></label>
+    <label>Evidence (URL):<br><input type="url" id="newEvidence" required></label>
+    <label>Status:<br>
+      <select id="newStatus" required>
+        <option value="Documented">Documented</option>
+        <option value="Deleted Post">Deleted Post</option>
+        <option value="Ongoing">Ongoing</option>
+      </select>
+    </label>
     <button type="submit">Submit</button>
   </form>
 </body>
