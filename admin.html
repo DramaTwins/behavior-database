@@ -9,6 +9,25 @@
     import { getFirestore, collection, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
+    // Helper for timestamp formatting
+    function formatTimestamp(ts) {
+      try {
+        if (!ts) return "";
+        // Firestore Timestamp object?
+        if (typeof ts.toDate === "function") {
+          return ts.toDate().toLocaleString();
+        }
+        // JS Date object
+        if (ts instanceof Date) {
+          return ts.toLocaleString();
+        }
+        // String or number
+        return String(ts);
+      } catch (e) {
+        return "";
+      }
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyClJy0GHBpDHSy4b5pKM0B9bNsMHa7pxAI",
       authDomain: "behavior-database.firebaseapp.com",
@@ -62,30 +81,29 @@
 
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${entry.date || ""}</td>
-            <td>${entry.platform || ""}</td>
-            <td>${entry.behavior || ""}</td>
-            <td>${entry.target || ""}</td>
-            <td>${entry.summary || ""}</td>
-            <td>${entry.evidence || ""}</td>
-            <td>${entry.timestamp || entry.timestamp_server?.toDate?.().toLocaleString?.() || ""}</td>
-            <td>${entry.status || ""}</td>
-            <td>${ip}</td>
-            <td>${entry.country || ""}</td>
-            <td>${entry.region || ""}</td>
-            <td>${entry.city || ""}</td>
-            <td>
-              ${ip ? (
-                isBanned
-                  ? `<button onclick="unbanIp('${ip}')">Unban</button>`
-                  : `<button onclick="banIp('${ip}')">Ban</button>`
-              ) : ""}
-            </td>
-            <td>
-              <button onclick="deleteEntry('${docSnap.id}')">Delete</button>
-            </td>
-          `;
-
+          <td>${entry.date || ""}</td>
+          <td>${entry.platform || ""}</td>
+          <td>${entry.behavior || ""}</td>
+          <td>${entry.target || ""}</td>
+          <td>${entry.summary || ""}</td>
+          <td>${entry.evidence || ""}</td>
+          <td>${formatTimestamp(entry.timestamp_server) || entry.timestamp || ""}</td>
+          <td>${entry.status || ""}</td>
+          <td>${ip}</td>
+          <td>${entry.country || ""}</td>
+          <td>${entry.region || ""}</td>
+          <td>${entry.city || ""}</td>
+          <td>
+            ${ip ? (
+              isBanned
+                ? `<button onclick="unbanIp('${ip}')">Unban</button>`
+                : `<button onclick="banIp('${ip}')">Ban</button>`
+            ) : ""}
+          </td>
+          <td>
+            <button onclick="deleteEntry('${docSnap.id}')">Delete</button>
+          </td>
+        `;
         tbody.appendChild(row);
       });
     };
@@ -112,13 +130,19 @@
   </script>
   <style>
     body { font-family: sans-serif; margin: 0; padding: 24px; background: #f5f5f5; }
-    .panel { max-width: 1200px; margin: 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px #0001; padding: 28px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; }
-    th, td { border: 1px solid #e0e0e0; padding: 8px 10px; }
-    th { background: #252850; color: #fff; }
-    button { padding: 6px 12px; border-radius: 6px; border: none; background: #185a9d; color: #fff; cursor: pointer; }
+    .panel { max-width: 1200px; margin: 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px #0001; padding: 28px; overflow-x: auto; }
+    table { width: 100%; min-width: 1400px; border-collapse: collapse; margin-top: 16px; background: #fff; }
+    th, td { border: 1px solid #e0e0e0; padding: 7px 8px; max-width: 180px; word-break: break-word; vertical-align: top; font-size: 0.97rem; }
+    th { background: #252850; color: #fff; font-size: 1rem; }
+    td:nth-child(5), td:nth-child(6) { max-width: 350px; }
+    button { padding: 5px 11px; border-radius: 6px; border: none; background: #185a9d; color: #fff; cursor: pointer; font-size: 0.97rem;}
     button:hover { background: #43cea2; color: #222; }
     .right { float:right; }
+    @media (max-width: 900px) {
+      .panel { padding: 2vw 1vw; }
+      th, td { font-size: 0.92rem; }
+      table { min-width: 1200px; }
+    }
   </style>
 </head>
 <body>
@@ -129,27 +153,29 @@
   <div id="adminPanel" class="panel" style="display:none;">
     <h2>Behavior Tracker Admin Panel</h2>
     <button onclick="signOutAdmin()" class="right">Sign Out</button>
-    <table id="adminDataTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Platform</th>
-          <th>Behavior</th>
-          <th>Target</th>
-          <th>Summary</th>
-          <th>Evidence</th>
-          <th>Timestamp</th>
-          <th>Status</th>
-          <th>IP</th>
-          <th>Country</th>
-          <th>Region</th>
-          <th>City</th>
-          <th>Ban/Unban</th>
-          <th>Delete</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div style="overflow-x:auto;">
+      <table id="adminDataTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Platform</th>
+            <th>Behavior</th>
+            <th>Target</th>
+            <th>Summary</th>
+            <th>Evidence</th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>IP</th>
+            <th>Country</th>
+            <th>Region</th>
+            <th>City</th>
+            <th>Ban/Unban</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 </body>
 </html>
