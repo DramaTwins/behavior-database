@@ -70,6 +70,19 @@
         const e = docSnap.data();
         const ip = e.ip || '';
         const isBanned = ip && banned[ip];
+        // Use timestamp_server for sorting, display formatted
+        let rawTimestamp = '';
+        let displayTimestamp = '';
+        if (e.timestamp_server && typeof e.timestamp_server.toDate === 'function') {
+          rawTimestamp = e.timestamp_server.toDate().getTime();
+          displayTimestamp = e.timestamp_server.toDate().toLocaleString();
+        } else if (e.timestamp_server && typeof e.timestamp_server === 'number') {
+          rawTimestamp = e.timestamp_server;
+          displayTimestamp = new Date(e.timestamp_server).toLocaleString();
+        } else if (e.timestamp) {
+          rawTimestamp = e.timestamp;
+          displayTimestamp = e.timestamp;
+        }
         rows.push([
           e.date||'',
           e.platform||'',
@@ -77,7 +90,9 @@
           e.target||'',
           e.summary||'',
           `<a href="${e.evidence||''}" target="_blank">Link</a>`,
-          formatTimestamp(e.timestamp_server)||e.timestamp||'',
+          e.timestamp||'', // Video timestamp from form
+          rawTimestamp, // for sorting
+          displayTimestamp, // for display (hidden column)
           e.status||'',
           ip,
           e.country||'',
@@ -97,8 +112,16 @@
           data: rows,
           columns: [
             { title: 'Date' },{ title:'Platform' },{ title:'Behavior' },{ title:'Target' },{ title:'Summary' },
-            { title:'Evidence' },{ title:'Timestamp' },{ title:'Status' },{ title:'IP' },{ title:'Country' },
-            { title:'Region' },{ title:'City' },{ title:'Ban/Unban', orderable:false },{ title:'Delete', orderable:false }
+            { title:'Evidence' },
+            { title:'Video Timestamp' },
+            { title:'Timestamp', visible:false }, // raw timestamp, hidden
+            { title:'Date Entered' }, // display formatted timestamp
+            { title:'Status' },{ title:'IP' },{ title:'Country' },{ title:'Region' },{ title:'City' },{ title:'Ban/Unban', orderable:false },{ title:'Delete', orderable:false }
+          ],
+          order: [[7, 'desc']], // sort by raw timestamp (date entered)
+          columnDefs: [
+            { targets: 7, visible: false }, // hide raw timestamp column
+            { targets: 8, orderData: 7 } // sort display column by raw timestamp
           ],
           scrollX: true,
           pageLength: 10,
