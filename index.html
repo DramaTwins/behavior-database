@@ -110,6 +110,18 @@
     }
 
     async function loadEntries() {
+      const filterValue = document.getElementById('behaviorFilter').value;
+      const snaps = await getDocs(collection(db, "entries"));
+      let rows = snaps.docs.map(docSnap => {
+        const e = docSnap.data();
+        const icons = {TikTok:'<i class="ti ti-brand-tiktok"></i>',Instagram:'<i class="ti ti-brand-instagram"></i>',YouTube:'<i class="ti ti-brand-youtube"></i>',Discord:'<i class="ti ti-brand-discord"></i>',Facebook:'<i class="ti ti-brand-facebook"></i>'};
+        const icon = icons[e.platform] || '<i class="ti ti-dots"></i>';
+        return [e.date||'', icon+ ' ' + (e.platform||''), e.behavior||'', e.target||'', e.summary||'', `<a href="${e.evidence||''}" target="_blank">Link</a>`, formatTimestamp(e.timestamp)||'', e.status||''];
+      });
+      // Apply behavior filter if set
+      if (filterValue) {
+        rows = rows.filter(r => r[2] === filterValue);
+      }
       const snaps = await getDocs(collection(db, "entries"));
       const data = snaps.docs.map(docSnap => {
         const e = docSnap.data();
