@@ -11,82 +11,111 @@
   <!-- DataTables CSS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
   <style>
-    body { font-family: 'Roboto', sans-serif; background: linear-gradient(120deg,#f7fafc,#e3e6ee 55%,#f7fafc 100%); color: #222; transition: background-color .3s, color .3s; }
+    body { font-family: 'Roboto', sans-serif; background: linear-gradient(120deg,#f7fafc,#e3e6ee 55%,#f7fafc 100%); color: #222; transition: background .4s, color .4s; }
     body.dark { background: linear-gradient(120deg,#232526,#28292d 55%,#232526 100%); color: #e0e0e0; }
     .container { max-width: 1200px; margin: 20px auto; padding: 0 12px; }
-    h1 { text-align: center; margin-bottom: 20px; }
+    /* Header Bar */
+    .header-bar { display: flex; align-items: center; justify-content: center; background: linear-gradient(90deg, #43cea2 0, #185a9d 100%); color: #fff; padding: 18px 0 12px 0; border-radius: 0 0 18px 18px; box-shadow: 0 2px 12px rgba(36,41,46,.08); margin-bottom: 24px; }
+    .header-bar .logo { font-size: 2.2rem; margin-right: 12px; }
+    .header-bar h1 { margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: 1px; }
+    /* Card Layout */
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(36,41,46,.10); padding: 24px 18px; margin-bottom: 32px; transition: background .3s, color .3s; }
+    body.dark .card { background: #232323; color: #f0f0f0; }
+    /* Button Enhancements */
     .button-wrapper { text-align: center; margin-bottom: 20px; }
-    .button-wrapper button { padding: 10px 20px; background: linear-gradient(90deg,#43cea2 0,#185a9d 100%); color: white; border: none; border-radius:5px; cursor:pointer; }
+    .button-wrapper button { padding: 12px 28px; border-radius: 999px; font-weight: 600; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(36,41,46,.08); background: linear-gradient(90deg,#43cea2 0,#185a9d 100%); color: white; border: none; cursor:pointer; transition: background .3s, transform .2s; display: inline-flex; align-items: center; gap: 8px; }
     .button-wrapper button:hover { background: linear-gradient(90deg,#185a9d 0,#43cea2 100%); }
+    .button-wrapper button:active { transform: scale(0.97); }
+    /* Filter Wrapper */
     .filter-wrapper { text-align: center; margin-bottom: 16px; }
     .filter-wrapper select { padding: 6px 8px; border-radius: 4px; border: 1px solid #ccc; }
-    table.dataTable { width: 100% !important; table-layout: auto; }
+    /* DataTable Card */
+    .dataTable-card { overflow-x: auto; }
+    table.dataTable { width: 100% !important; table-layout: auto; border-radius: 12px; overflow: hidden; background: transparent; }
+    table.dataTable thead { background: #f7fafc; }
+    body.dark table.dataTable thead { background: #232526; }
+    table.dataTable tbody tr:hover { background: #e3e6ee; transition: background .2s; }
+    body.dark table.dataTable tbody tr:hover { background: #292a35; }
     /* Submission Form Styles */
-    form#incidentForm { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(36,41,46,.10); max-width: 600px; margin: 32px auto; padding: 18px 16px; border: 1.5px solid #e8e9f1; }
-    body.dark form#incidentForm { background: #181818; color: #f0f0f0; border-color: #292a35; }
+    form#incidentForm { background: transparent; border-radius: 12px; box-shadow: none; max-width: 600px; margin: 32px auto; padding: 18px 16px; border: none; }
+    body.dark form#incidentForm { background: transparent; color: #f0f0f0; border-color: #292a35; }
     form#incidentForm label { display:block; font-weight:500; margin-bottom:4px; }
-    form#incidentForm input, form#incidentForm select, form#incidentForm textarea { width:100%; padding:7px 8px; margin:4px 0 12px; border-radius:6px; border:1px solid #bdbdbd; background:#f8fafd; }
+    form#incidentForm input, form#incidentForm select, form#incidentForm textarea { width:100%; padding:7px 8px; margin:4px 0 12px; border-radius:6px; border:1px solid #bdbdbd; background:#f8fafd; transition: border-color .2s, box-shadow .2s, background .2s; }
     body.dark form#incidentForm input, body.dark form#incidentForm select, body.dark form#incidentForm textarea { background:#232323; color:#f0f0f0; border:1px solid #444; }
-    form#incidentForm button { display:block; margin:10px auto 0; padding:10px 25px; background:linear-gradient(90deg,#43cea2 0,#185a9d 100%); color:white; border:none; border-radius:8px; cursor:pointer; }
+    form#incidentForm input:focus, form#incidentForm select:focus, form#incidentForm textarea:focus { border-color: #43cea2; outline: none; box-shadow: 0 0 0 2px #43cea233; background: #f0f8f7; }
+    body.dark form#incidentForm input:focus, body.dark form#incidentForm select:focus, body.dark form#incidentForm textarea:focus { background: #232a2a; border-color: #43cea2; }
+    form#incidentForm button { display:block; margin:10px auto 0; padding:12px 28px; background:linear-gradient(90deg,#43cea2 0,#185a9d 100%); color:white; border:none; border-radius:999px; cursor:pointer; font-weight:600; font-size:1.1rem; box-shadow: 0 2px 8px rgba(36,41,46,.08); transition: background .3s, transform .2s; }
     form#incidentForm button:hover { background:linear-gradient(90deg,#185a9d 0,#43cea2 100%); }
-    @media (max-width: 700px) { form#incidentForm { padding: 8px 1vw; } }
+    form#incidentForm button:active { transform: scale(0.97); }
+    @media (max-width: 700px) { 
+      .header-bar { flex-direction: column; padding: 12px 0; }
+      .card { padding: 10px 2vw; }
+      form#incidentForm { padding: 8px 1vw; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🧠 Documented Behavior Database</h1>
-    <div class="button-wrapper">
-      <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+    <div class="header-bar">
+      <span class="logo"><i class="ti ti-brain"></i></span>
+      <h1>Documented Behavior Database</h1>
     </div>
-    <div class="filter-wrapper">
-      <label for="behaviorFilter">Filter Behavior:</label>
-      <select id="behaviorFilter">
-        <option value="">All</option>
-        <option value="Gaslighting">Gaslighting</option>
-        <option value="Smear Campaign">Smear Campaign</option>
-        <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
-        <option value="Contradictory Statements">Contradictory Statements</option>
-        <option value="Victim Playing">Victim Playing</option>
-        <option value="Other">Other</option>
-      </select>
+    <div class="card">
+      <div class="button-wrapper">
+        <button onclick="toggleDarkMode()"><i class="ti ti-moon"></i> Toggle Dark Mode</button>
+      </div>
+      <div class="filter-wrapper">
+        <label for="behaviorFilter">Filter Behavior:</label>
+        <select id="behaviorFilter">
+          <option value="">All</option>
+          <option value="Gaslighting">Gaslighting</option>
+          <option value="Smear Campaign">Smear Campaign</option>
+          <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
+          <option value="Contradictory Statements">Contradictory Statements</option>
+          <option value="Victim Playing">Victim Playing</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="dataTable-card">
+        <table id="dataTable" class="display nowrap"></table>
+      </div>
     </div>
-    <table id="dataTable" class="display nowrap"></table>
-    
     <!-- Submission Form -->
-    <form id="incidentForm" onsubmit="submitHandler(event)">
-      <h2 style="text-align:center">Submit New Behavior</h2>
-      <label>Date:<input type="date" id="newDate" required></label>
-      <label>Platform:<select id="newPlatform" required>
-        <option value="">Select Platform</option>
-        <option value="TikTok">TikTok</option>
-        <option value="Instagram">Instagram</option>
-        <option value="YouTube">YouTube</option>
-        <option value="Discord">Discord</option>
-        <option value="Facebook">Facebook</option>
-        <option value="Other">Other</option>
-      </select></label>
-      <label>Behavior:<select id="newBehavior" required>
-        <option value="">Select Behavior</option>
-        <option value="Gaslighting">Gaslighting</option>
-        <option value="Smear Campaign">Smear Campaign</option>
-        <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
-        <option value="Contradictory Statements">Contradictory Statements</option>
-        <option value="Victim Playing">Victim Playing</option>
-        <option value="Other">Other</option>
-      </select></label>
-      <label>Target:<input type="text" id="newTarget" required></label>
-      <label>Summary:<textarea id="newSummary" rows="3" required></textarea></label>
-      <label>Evidence (URL):<input type="url" id="newEvidence" required placeholder="https://"></label>
-      <label>Video Timestamp (optional):<input type="text" id="newTimestamp" placeholder="e.g. 13:42"></label>
-      <label>Status:<select id="newStatus" required>
-        <option value="Documented">Documented</option>
-        <option value="Deleted Post">Deleted Post</option>
-        <option value="Ongoing">Ongoing</option>
-      </select></label>
-      <button type="submit">Submit</button>
-    </form>
+    <div class="card">
+      <form id="incidentForm" onsubmit="submitHandler(event)">
+        <h2 style="text-align:center">Submit New Behavior</h2>
+        <label>Date:<input type="date" id="newDate" required></label>
+        <label>Platform:<select id="newPlatform" required>
+          <option value="">Select Platform</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Instagram">Instagram</option>
+          <option value="YouTube">YouTube</option>
+          <option value="Discord">Discord</option>
+          <option value="Facebook">Facebook</option>
+          <option value="Other">Other</option>
+        </select></label>
+        <label>Behavior:<select id="newBehavior" required>
+          <option value="">Select Behavior</option>
+          <option value="Gaslighting">Gaslighting</option>
+          <option value="Smear Campaign">Smear Campaign</option>
+          <option value="Love Bombing & Devaluation">Love Bombing & Devaluation</option>
+          <option value="Contradictory Statements">Contradictory Statements</option>
+          <option value="Victim Playing">Victim Playing</option>
+          <option value="Other">Other</option>
+        </select></label>
+        <label>Target:<input type="text" id="newTarget" required></label>
+        <label>Summary:<textarea id="newSummary" rows="3" required></textarea></label>
+        <label>Evidence (URL):<input type="url" id="newEvidence" required placeholder="https://"></label>
+        <label>Video Timestamp (optional):<input type="text" id="newTimestamp" placeholder="e.g. 13:42"></label>
+        <label>Status:<select id="newStatus" required>
+          <option value="Documented">Documented</option>
+          <option value="Deleted Post">Deleted Post</option>
+          <option value="Ongoing">Ongoing</option>
+        </select></label>
+        <button type="submit"><i class="ti ti-send"></i> Submit</button>
+      </form>
+    </div>
   </div>
-
   <!-- jQuery & DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
@@ -99,7 +128,7 @@
       apiKey: "AIzaSyClJy0GHBpDHSy4b5pKM0B9bNsMHa7pxAI",
       authDomain: "behavior-database.firebaseapp.com",
       projectId: "behavior-database",
-      storageBucket: "behavior-database.appspot.com",
+      storageBucket: "behavior-database.firebasestorage.app",
       messagingSenderId: "350774293300",
       appId: "1:350774293300:web:44e06673ae52421375eb61"
     };
