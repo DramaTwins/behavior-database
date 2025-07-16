@@ -9,23 +9,14 @@
     import { getFirestore, collection, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-    // Helper for timestamp formatting 
+    // Helper for timestamp formatting
     function formatTimestamp(ts) {
       try {
         if (!ts) return "";
-        // Firestore Timestamp object?
-        if (typeof ts.toDate === "function") {
-          return ts.toDate().toLocaleString();
-        }
-        // JS Date object
-        if (ts instanceof Date) {
-          return ts.toLocaleString();
-        }
-        // String or number
+        if (typeof ts.toDate === "function") return ts.toDate().toLocaleString();
+        if (ts instanceof Date) return ts.toLocaleString();
         return String(ts);
-      } catch (e) {
-        return "";
-      }
+      } catch { return ""; }
     }
 
     const firebaseConfig = {
@@ -36,143 +27,136 @@
       messagingSenderId: "350774293300",
       appId: "1:350774293300:web:44e06673ae52421375eb61"
     };
-    const ADMIN_EMAIL = "dramatwinsmoviereels@gmail.com"; // <--- Replace with your email
+    const ADMIN_EMAIL = "dramatwinsmoviereels@gmail.com";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
 
+    let entryList = [];
+    let currentSort = { col: null, asc: true };
+
     window.signIn = async function() {
       const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        alert("Sign-in failed: " + err.message);
-      }
+      try { await signInWithPopup(auth, provider); }
+      catch (err) { alert("Sign-in failed: " + err.message); }
     };
-    window.signOutAdmin = async function() {
-      await signOut(auth);
-    };
+    window.signOutAdmin = async function() { await signOut(auth); };
 
     onAuthStateChanged(auth, async (user) => {
       if (user && user.email === ADMIN_EMAIL) {
         document.getElementById("adminPanel").style.display = "block";
         document.getElementById("loginPanel").style.display = "none";
-        loadAdminEntries();
+        await loadAdminEntries();
       } else {
         document.getElementById("adminPanel").style.display = "none";
         document.getElementById("loginPanel").style.display = "block";
       }
     });
 
-    // Load entries with IPs and Ban/Unban controls
-    window.loadAdminEntries = async function() {
+    // Fetch and initialize entries
+    async function loadAdminEntries() {
+      const entriesSnap = await getDocs(collection(db, "entries"));
+      const bannedSnap = await getDocs(collection(db, "bannedIps"));
+      const banned = {};
+      bannedSnap.forEach(d => banned[d.id] = true);
+
+      entryList = entriesSnap.docs.map(docSnap => {
+        const e = docSnap.data();
+        e._id = docSnap.id;
+        e.isBanned = e.ip && banned[e.ip];
+        return e;
+      });
+      renderTable(entryList);
+    }
+
+    // Render table rows from list
+    function renderTable(list) {
       const tbody = document.querySelector("#adminDataTable tbody");
       tbody.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "entries"));
-      const bannedIpsSnap = await getDocs(collection(db, "bannedIps"));
-      const bannedIps = {};
-      bannedIpsSnap.forEach(doc => bannedIps[doc.id] = true);
+      const filter = document.getElementById('searchInput').value.toLowerCase();
+      list.forEach(entry => {
+        // filter
+        const rowText = Object.values(entry).join(' ').toLowerCase();
+        if (filter && !rowText.includes(filter)) return;
 
-      querySnapshot.forEach(docSnap => {
-        const entry = docSnap.data();
         const ip = entry.ip || "";
-        const isBanned = ip && bannedIps[ip];
-
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${entry.date || ""}</td>
-          <td>${entry.platform || ""}</td>
-          <td>${entry.behavior || ""}</td>
-          <td>${entry.target || ""}</td>
-          <td>${entry.summary || ""}</td>
-          <td>${entry.evidence || ""}</td>
-          <td>${formatTimestamp(entry.timestamp_server) || entry.timestamp || ""}</td>
-          <td>${entry.status || ""}</td>
+          <td>${entry.date||""}</td>
+          <td>${entry.platform||""}</td>
+          <td>${entry.behavior||""}</td>
+          <td>${entry.target||""}</td>
+          <td>${entry.summary||""}</td>
+          <td>${entry.evidence||""}</td>
+          <td>${formatTimestamp(entry.timestamp_server)||entry.timestamp||""}</td>
+          <td>${entry.status||""}</td>
           <td>${ip}</td>
-          <td>${entry.country || ""}</td>
-          <td>${entry.region || ""}</td>
-          <td>${entry.city || ""}</td>
-          <td>
-            ${ip ? (
-              isBanned
-                ? `<button onclick="unbanIp('${ip}')">Unban</button>`
-                : `<button onclick="banIp('${ip}')">Ban</button>`
-            ) : ""}
-          </td>
-          <td>
-            <button onclick="deleteEntry('${docSnap.id}')">Delete</button>
-          </td>
+          <td>${entry.country||""}</td>
+          <td>${entry.region||""}</td>
+          <td>${entry.city||""}</td>
+          <td>${ip? (entry.isBanned ? `<button onclick="unbanIp('${ip}')">Unban</button>` : `<button onclick="banIp('${ip}')">Ban</button>`) : ''}</td>
+          <td><button onclick="deleteEntry('${entry._id}')">Delete</button></td>
         `;
         tbody.appendChild(row);
       });
-    };
+    }
 
-    // Ban IP
-    window.banIp = async function(ip) {
-      await setDoc(doc(db, "bannedIps", ip), { banned: true });
-      loadAdminEntries();
-    };
+    // Sort by column index
+    function sortTable(colIndex) {
+      entryList.sort((a,b) => {
+        const cols = ['date','platform','behavior','target','summary','evidence','timestamp_server','status','ip','country','region','city'];
+        const key = cols[colIndex];
+        let va = a[key]||"", vb = b[key]||"";
+        if (key==='timestamp_server') { va=formatTimestamp(a[key]); vb=formatTimestamp(b[key]); }
+        if (va<vb) return currentSort.asc? -1:1;
+        if (va>vb) return currentSort.asc? 1:-1;
+        return 0;
+      });
+      currentSort.col = colIndex;
+      currentSort.asc = !currentSort.asc;
+      renderTable(entryList);
+    }
 
-    // Unban IP
-    window.unbanIp = async function(ip) {
-      await deleteDoc(doc(db, "bannedIps", ip));
-      loadAdminEntries();
-    };
+    // Event listeners
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('searchInput').addEventListener('input', () => renderTable(entryList));
+      document.querySelectorAll('#adminDataTable th').forEach((th,i) => th.addEventListener('click', () => sortTable(i)));
+    });
 
-    // Delete entry
-    window.deleteEntry = async function(docId) {
-      if (confirm("Delete this entry?")) {
-        await deleteDoc(doc(db, "entries", docId));
-        loadAdminEntries();
-      }
-    };
+    window.banIp = async function(ip) { await setDoc(doc(db,'bannedIps',ip),{banned:true}); loadAdminEntries(); };
+    window.unbanIp = async function(ip) { await deleteDoc(doc(db,'bannedIps',ip)); loadAdminEntries(); };
+    window.deleteEntry = async function(id) { if(confirm('Delete this entry?')) { await deleteDoc(doc(db,'entries',id)); loadAdminEntries(); }};
   </script>
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 24px; background: #f5f5f5; }
-    .panel { max-width: 1200px; margin: 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px #0001; padding: 28px; overflow-x: auto; }
-    table { width: 100%; min-width: 1400px; border-collapse: collapse; margin-top: 16px; background: #fff; }
-    th, td { border: 1px solid #e0e0e0; padding: 7px 8px; max-width: 180px; word-break: break-word; vertical-align: top; font-size: 0.97rem; }
-    th { background: #252850; color: #fff; font-size: 1rem; }
-    td:nth-child(5), td:nth-child(6) { max-width: 350px; }
-    button { padding: 5px 11px; border-radius: 6px; border: none; background: #185a9d; color: #fff; cursor: pointer; font-size: 0.97rem;}
-    button:hover { background: #43cea2; color: #222; }
-    .right { float:right; }
-    @media (max-width: 900px) {
-      .panel { padding: 2vw 1vw; }
-      th, td { font-size: 0.92rem; }
-      table { min-width: 1200px; }
-    }
+    body{font-family:sans-serif;margin:0;padding:24px;background:#f5f5f5}
+    .panel{max-width:1200px;margin:0 auto;background:#fff;border-radius:10px;box-shadow:0 2px 10px #0001;padding:28px;overflow-x:auto}
+    #searchInput{width:100%;padding:8px;margin-bottom:12px;border:1px solid #ccc;border-radius:4px}
+    table{width:100%;min-width:1400px;border-collapse:collapse;margin-top:8px}
+    th,td{border:1px solid #e0e0e0;padding:6px 8px;max-width:180px;word-break:break-word;vertical-align:top;font-size:0.95rem;cursor:pointer}
+    th{background:#252850;color:#fff}
+    button{padding:4px 10px;border-radius:4px;border:none;background:#185a9d;color:#fff;cursor:pointer;font-size:0.9rem}
+    button:hover{background:#43cea2;color:#222}
+    .right{float:right}
+    @media (max-width:900px){.panel{padding:2vw 1vw}th,td{font-size:0.9rem}table{min-width:1200px}}
   </style>
 </head>
 <body>
-  <div id="loginPanel" class="panel" style="display:block;">
+  <div id="loginPanel" class="panel" style="display:block">
     <h2>Admin Sign-In</h2>
     <button onclick="signIn()">Sign in with Google</button>
   </div>
-  <div id="adminPanel" class="panel" style="display:none;">
+  <div id="adminPanel" class="panel" style="display:none">
     <h2>Behavior Tracker Admin Panel</h2>
     <button onclick="signOutAdmin()" class="right">Sign Out</button>
-    <div style="overflow-x:auto;">
+    <input id="searchInput" placeholder="Search entries...">
+    <div style="overflow-x:auto">
       <table id="adminDataTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Platform</th>
-            <th>Behavior</th>
-            <th>Target</th>
-            <th>Summary</th>
-            <th>Evidence</th>
-            <th>Timestamp</th>
-            <th>Status</th>
-            <th>IP</th>
-            <th>Country</th>
-            <th>Region</th>
-            <th>City</th>
-            <th>Ban/Unban</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Date</th><th>Platform</th><th>Behavior</th><th>Target</th><th>Summary</th><th>Evidence</th>
+          <th>Timestamp</th><th>Status</th><th>IP</th><th>Country</th><th>Region</th><th>City</th>
+          <th>Ban/Unban</th><th>Delete</th>
+        </tr></thead>
         <tbody></tbody>
       </table>
     </div>
