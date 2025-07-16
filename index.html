@@ -170,6 +170,7 @@
           e.target||'',
           e.summary||'',
           `<a href="${e.evidence||''}" target="_blank">Link</a>`,
+          e.timestamp||'', // Video timestamp from form
           rawTimestamp, // for sorting
           displayTimestamp, // for display (hidden column)
           e.status||''
@@ -181,7 +182,7 @@
         table = $('#dataTable').DataTable({
           data,
           destroy: true,
-          order: [[6, 'desc']], // sort by timestamp_server (rawTimestamp)
+          order: [[7, 'desc']], // sort by timestamp_server (rawTimestamp)
           columns: [
             { title: 'Date' },
             { title: 'Platform' },
@@ -189,13 +190,14 @@
             { title: 'Target' },
             { title: 'Summary' },
             { title: 'Evidence', className: 'dt-center' },
+            { title: 'Video Timestamp' },
             { title: 'Timestamp', visible: false }, // raw timestamp, hidden
             { title: 'Date Entered' }, // display formatted timestamp
             { title: 'Status' }
           ],
           columnDefs: [
-            { targets: 6, visible: false }, // hide raw timestamp column
-            { targets: 7, orderData: 6 } // sort display column by raw timestamp
+            { targets: 7, visible: false }, // hide raw timestamp column
+            { targets: 8, orderData: 7 } // sort display column by raw timestamp
           ],
           scrollX: true,
           pageLength: 10
