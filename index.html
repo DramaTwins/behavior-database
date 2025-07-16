@@ -18,7 +18,8 @@
     .button-wrapper { text-align: center; margin-bottom: 20px; }
     .button-wrapper button { padding: 10px 20px; background: linear-gradient(90deg,#43cea2 0,#185a9d 100%); color: white; border: none; border-radius:5px; cursor:pointer; }
     .button-wrapper button:hover { background: linear-gradient(90deg,#185a9d 0,#43cea2 100%); }
-    /* Ensure DataTables fits container */
+    .filter-wrapper { text-align: center; margin-bottom: 16px; }
+    .filter-wrapper select { padding: 6px 8px; border-radius: 4px; border: 1px solid #ccc; }
     table.dataTable { width: 100% !important; table-layout: auto; }
     /* Submission Form Styles */
     form#incidentForm { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(36,41,46,.10); max-width: 600px; margin: 32px auto; padding: 18px 16px; border: 1.5px solid #e8e9f1; }
@@ -37,8 +38,8 @@
     <div class="button-wrapper">
       <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
     </div>
-    <div style="margin-bottom:16px; text-align:center;">
-      <label for="behaviorFilter">Filter Behavior: </label>
+    <div class="filter-wrapper">
+      <label for="behaviorFilter">Filter Behavior:</label>
       <select id="behaviorFilter">
         <option value="">All</option>
         <option value="Gaslighting">Gaslighting</option>
@@ -106,48 +107,54 @@
     const db = getFirestore(app);
 
     function formatTimestamp(ts) {
-      try { if (!ts) return ''; return ts.toString(); } catch { return ''; }
+      return ts ? ts.toString() : '';
     }
 
+    let table;
     async function loadEntries() {
-      const filterValue = document.getElementById('behaviorFilter').value;
+      const filter = document.getElementById('behaviorFilter').value;
       const snaps = await getDocs(collection(db, "entries"));
-      let rows = snaps.docs.map(docSnap => {
+      const data = [];
+      snaps.docs.forEach(docSnap => {
         const e = docSnap.data();
+        if (filter && e.behavior !== filter) return;
         const icons = {TikTok:'<i class="ti ti-brand-tiktok"></i>',Instagram:'<i class="ti ti-brand-instagram"></i>',YouTube:'<i class="ti ti-brand-youtube"></i>',Discord:'<i class="ti ti-brand-discord"></i>',Facebook:'<i class="ti ti-brand-facebook"></i>'};
         const icon = icons[e.platform] || '<i class="ti ti-dots"></i>';
-        return [e.date||'', icon+ ' ' + (e.platform||''), e.behavior||'', e.target||'', e.summary||'', `<a href="${e.evidence||''}" target="_blank">Link</a>`, formatTimestamp(e.timestamp)||'', e.status||''];
+        data.push([
+          e.date||'',
+          icon+ ' ' + (e.platform||''),
+          e.behavior||'',
+          e.target||'',
+          e.summary||'',
+          `<a href="${e.evidence||''}" target="_blank">Link</a>`,
+          formatTimestamp(e.timestamp)||'',
+          e.status||''
+        ]);
       });
-      // Apply behavior filter if set
-      if (filterValue) {
-        rows = rows.filter(r => r[2] === filterValue);
+      if (table) {
+        table.clear().rows.add(data).draw();
+      } else {
+        table = $('#dataTable').DataTable({
+          data,
+          destroy: true,
+          order: [[0, 'desc']],
+          columns: [
+            { title: 'Date' },
+            { title: 'Platform' },
+            { title: 'Behavior' },
+            { title: 'Target' },
+            { title: 'Summary' },
+            { title: 'Evidence', className: 'dt-center' },
+            { title: 'Timestamp' },
+            { title: 'Status' }
+          ],
+          scrollX: true,
+          pageLength: 10
+        });
       }
-      const snaps = await getDocs(collection(db, "entries"));
-      const data = snaps.docs.map(docSnap => {
-        const e = docSnap.data();
-        const icons = {TikTok:'<i class="ti ti-brand-tiktok"></i>',Instagram:'<i class="ti ti-brand-instagram"></i>',YouTube:'<i class="ti ti-brand-youtube"></i>',Discord:'<i class="ti ti-brand-discord"></i>',Facebook:'<i class="ti ti-brand-facebook"></i>'};
-        const icon = icons[e.platform] || '<i class="ti ti-dots"></i>';
-        return [e.date||'', icon+ ' ' + (e.platform||''), e.behavior||'', e.target||'', e.summary||'', `<a href="${e.evidence||''}" target="_blank">Link</a>`, formatTimestamp(e.timestamp)||'', e.status||''];
-      });
-      $('#dataTable').DataTable({
-        data,
-        destroy: true,
-        order: [[0, 'desc']],
-        columns: [
-          { title: 'Date' },
-          { title: 'Platform' },
-          { title: 'Behavior' },
-          { title: 'Target' },
-          { title: 'Summary' },
-          { title: 'Evidence', className: 'dt-center' },
-          { title: 'Timestamp' },
-          { title: 'Status' }
-        ],
-        scrollX: true,
-        pageLength: 10
-      });
     }
 
+    document.getElementById('behaviorFilter').addEventListener('change', loadEntries);
     window.onload = loadEntries;
     window.toggleDarkMode = () => document.body.classList.toggle('dark');
 
