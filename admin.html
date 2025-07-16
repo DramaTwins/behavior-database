@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Behavior Tracker Admin</title>
+  <title>Behavior Tracker Admin (DataTables)</title>
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+  <!-- jQuery & DataTables JS -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getFirestore, collection, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
+    // Format Firestore timestamps
     function formatTimestamp(ts) {
       try {
         if (!ts) return "";
@@ -31,99 +37,90 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
+    let dataTable;
 
-    let entryList = [];
-    let currentSort = { col: null, asc: true };
-
-    window.signIn = async function() {
+    window.signIn = async () => {
       try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-      catch (err) { alert("Sign-in failed: " + err.message); }
+      catch (err) { alert('Sign-in failed: ' + err.message); }
     };
-    window.signOutAdmin = async function() { await signOut(auth); };
+    window.signOutAdmin = async () => { await signOut(auth); };
 
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, async user => {
       if (user?.email === ADMIN_EMAIL) {
-        document.getElementById("adminPanel").style.display = "block";
-        document.getElementById("loginPanel").style.display = "none";
+        $('#adminPanel').show();
+        $('#loginPanel').hide();
         await loadAdminEntries();
       } else {
-        document.getElementById("adminPanel").style.display = "none";
-        document.getElementById("loginPanel").style.display = "block";
+        $('#adminPanel').hide();
+        $('#loginPanel').show();
       }
     });
 
     async function loadAdminEntries() {
-      const snaps = await getDocs(collection(db, "entries"));
+      const snaps = await getDocs(collection(db, 'entries'));
+      const bannedSnap = await getDocs(collection(db, 'bannedIps'));
       const banned = {};
-      (await getDocs(collection(db, "bannedIps"))).forEach(d => banned[d.id] = true);
-      entryList = snaps.docs.map(d => ({ ...d.data(), _id: d.id, isBanned: banned[d.data().ip] }));
-      renderTable(entryList);
-    }
+      bannedSnap.forEach(d => banned[d.id] = true);
 
-    function renderTable(list) {
-      const tbody = document.querySelector("#adminDataTable tbody");
-      tbody.innerHTML = "";
-      list.forEach(e => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${e.date||""}</td>
-          <td>${e.platform||""}</td>
-          <td>${e.behavior||""}</td>
-          <td>${e.target||""}</td>
-          <td>${e.summary||""}</td>
-          <td>${e.evidence||""}</td>
-          <td>${formatTimestamp(e.timestamp_server)||e.timestamp||""}</td>
-          <td>${e.status||""}</td>
-          <td>${e.ip||""}</td>
-          <td>${e.country||""}</td>
-          <td>${e.region||""}</td>
-          <td>${e.city||""}</td>
-          <td>${e.ip? (e.isBanned? `<button onclick="unbanIp('${e.ip}')">Unban</button>` : `<button onclick="banIp('${e.ip}')">Ban</button>`) : ''}</td>
-          <td><button onclick="deleteEntry('${e._id}')">Delete</button></td>
-        `;
-        tbody.appendChild(row);
+      const rows = [];
+      snaps.forEach(docSnap => {
+        const e = docSnap.data();
+        const ip = e.ip || '';
+        const isBanned = ip && banned[ip];
+        rows.push([
+          e.date||'',
+          e.platform||'',
+          e.behavior||'',
+          e.target||'',
+          e.summary||'',
+          `<a href="${e.evidence||''}" target="_blank">Link</a>`,
+          formatTimestamp(e.timestamp_server)||e.timestamp||'',
+          e.status||'',
+          ip,
+          e.country||'',
+          e.region||'',
+          e.city||'',
+          ip ? (isBanned
+            ? `<button class="dt-btn" onclick="unbanIp('${ip}')">Unban</button>`
+            : `<button class="dt-btn" onclick="banIp('${ip}')">Ban</button>`) : '',
+          `<button class="dt-btn" onclick="deleteEntry('${docSnap.id}')">Delete</button>`
+        ]);
       });
+
+      if ($.fn.dataTable.isDataTable('#adminDataTable')) {
+        dataTable.clear().rows.add(rows).draw();
+      } else {
+        dataTable = $('#adminDataTable').DataTable({
+          data: rows,
+          columns: [
+            { title: 'Date' },{ title:'Platform' },{ title:'Behavior' },{ title:'Target' },{ title:'Summary' },
+            { title:'Evidence' },{ title:'Timestamp' },{ title:'Status' },{ title:'IP' },{ title:'Country' },
+            { title:'Region' },{ title:'City' },{ title:'Ban/Unban', orderable:false },{ title:'Delete', orderable:false }
+          ],
+          scrollX: true,
+          pageLength: 10,
+          responsive: true
+        });
+      }
     }
 
     window.banIp = async ip => { await setDoc(doc(db,'bannedIps',ip),{banned:true}); loadAdminEntries(); };
     window.unbanIp = async ip => { await deleteDoc(doc(db,'bannedIps',ip)); loadAdminEntries(); };
-    window.deleteEntry = async id => { if(confirm('Delete this entry?')){ await deleteDoc(doc(db,'entries',id)); loadAdminEntries(); }};
+    window.deleteEntry = async id => { if (confirm('Delete this entry?')) { await deleteDoc(doc(db,'entries',id)); loadAdminEntries(); }};
   </script>
   <style>
-    body { font-family: sans-serif; margin:0; padding:24px; background:#f5f5f5; }
-    .panel { max-width:1200px; margin:0 auto; background:#fff; border-radius:8px; box-shadow:0 1px 6px rgba(0,0,0,0.15); padding:20px; }
-    #searchInput { width:100%; padding:8px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px; }
-    .table-container { overflow-x:auto; }
-    table { width:100%; border-collapse: collapse; table-layout:auto; }
-    th, td { border:1px solid #ddd; padding:8px; white-space:normal; vertical-align:top; }
-    th { background:#333; color:#fff; cursor:pointer; }
-    td { word-wrap:break-word; }
-    button { padding:4px 10px; margin:2px; border:none; border-radius:4px; background:#185a9d; color:#fff; cursor:pointer; }
-    button:hover { background:#43cea2; color:#222; }
-    @media (max-width:900px) { .panel{padding:2vw;} th,td{font-size:0.9rem;} }
+    body { font-family:sans-serif; background:#f5f5f5; margin:0; padding:20px; }
+    .panel { background:#fff; padding:20px; margin:auto; max-width:1200px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    #loginPanel button, #adminPanel button.dt-btn { margin:0 4px; }
+    #adminPanel { display:none; }
+    #adminPanel .right { float:right; }
   </style>
 </head>
 <body>
-  <div id="loginPanel" class="panel" style="display:block;">
-    <h2>Admin Sign-In</h2>
-    <button onclick="signIn()">Sign in with Google</button>
-  </div>
-  <div id="adminPanel" class="panel" style="display:none;">
-    <h2>Behavior Tracker Admin Panel</h2>
-    <button class="right" onclick="signOutAdmin()">Sign Out</button>
-    <input id="searchInput" placeholder="Search entries...">
-    <div class="table-container">
-      <table id="adminDataTable">
-        <thead>
-          <tr>
-            <th>Date</th><th>Platform</th><th>Behavior</th><th>Target</th><th>Summary</th>
-            <th>Evidence</th><th>Timestamp</th><th>Status</th><th>IP</th><th>Country</th>
-            <th>Region</th><th>City</th><th>Ban/Unban</th><th>Delete</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <div id="loginPanel" class="panel"><h2>Admin Sign-In</h2><button onclick="signIn()">Sign in with Google</button></div>
+  <div id="adminPanel" class="panel">
+    <h2>Behavior Tracker Admin</h2><button class="right" onclick="signOutAdmin()">Sign Out</button>
+    <table id="adminDataTable" class="display" style="width:100%"></table>
   </div>
 </body>
 </html>
