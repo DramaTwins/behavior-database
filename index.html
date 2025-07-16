@@ -149,6 +149,20 @@
         if (filter && e.behavior !== filter) return;
         const icons = {TikTok:'<i class="ti ti-brand-tiktok"></i>',Instagram:'<i class="ti ti-brand-instagram"></i>',YouTube:'<i class="ti ti-brand-youtube"></i>',Discord:'<i class="ti ti-brand-discord"></i>',Facebook:'<i class="ti ti-brand-facebook"></i>'};
         const icon = icons[e.platform] || '<i class="ti ti-dots"></i>';
+        // Use timestamp_server for sorting, display formatted
+        let rawTimestamp = '';
+        let displayTimestamp = '';
+        if (e.timestamp_server && typeof e.timestamp_server.toDate === 'function') {
+          rawTimestamp = e.timestamp_server.toDate().getTime();
+          displayTimestamp = e.timestamp_server.toDate().toLocaleString();
+        } else if (e.timestamp_server && typeof e.timestamp_server === 'number') {
+          rawTimestamp = e.timestamp_server;
+          displayTimestamp = new Date(e.timestamp_server).toLocaleString();
+        } else if (e.timestamp) {
+          // fallback to existing timestamp
+          rawTimestamp = e.timestamp;
+          displayTimestamp = e.timestamp;
+        }
         data.push([
           e.date||'',
           icon+ ' ' + (e.platform||''),
@@ -156,7 +170,8 @@
           e.target||'',
           e.summary||'',
           `<a href="${e.evidence||''}" target="_blank">Link</a>`,
-          formatTimestamp(e.timestamp)||'',
+          rawTimestamp, // for sorting
+          displayTimestamp, // for display (hidden column)
           e.status||''
         ]);
       });
@@ -166,7 +181,7 @@
         table = $('#dataTable').DataTable({
           data,
           destroy: true,
-          order: [[0, 'desc']],
+          order: [[6, 'desc']], // sort by timestamp_server (rawTimestamp)
           columns: [
             { title: 'Date' },
             { title: 'Platform' },
@@ -174,8 +189,13 @@
             { title: 'Target' },
             { title: 'Summary' },
             { title: 'Evidence', className: 'dt-center' },
-            { title: 'Timestamp' },
+            { title: 'Timestamp', visible: false }, // raw timestamp, hidden
+            { title: 'Date Entered' }, // display formatted timestamp
             { title: 'Status' }
+          ],
+          columnDefs: [
+            { targets: 6, visible: false }, // hide raw timestamp column
+            { targets: 7, orderData: 6 } // sort display column by raw timestamp
           ],
           scrollX: true,
           pageLength: 10
