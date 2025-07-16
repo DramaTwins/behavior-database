@@ -62,26 +62,30 @@
 
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${entry.date}</td>
-          <td>${entry.platform}</td>
-          <td>${entry.behavior}</td>
-          <td>${entry.target}</td>
-          <td>${entry.summary}</td>
-          <td>${entry.evidence}</td>
-          <td>${entry.timestamp || ""}</td>
-          <td>${entry.status}</td>
-          <td>${ip}</td>
-          <td>
-            ${ip ? (
-              isBanned
-                ? `<button onclick="unbanIp('${ip}')">Unban</button>`
-                : `<button onclick="banIp('${ip}')">Ban</button>`
-            ) : ""}
-          </td>
-          <td>
-            <button onclick="deleteEntry('${docSnap.id}')">Delete</button>
-          </td>
-        `;
+            <td>${entry.date || ""}</td>
+            <td>${entry.platform || ""}</td>
+            <td>${entry.behavior || ""}</td>
+            <td>${entry.target || ""}</td>
+            <td>${entry.summary || ""}</td>
+            <td>${entry.evidence || ""}</td>
+            <td>${entry.timestamp || entry.timestamp_server?.toDate?.().toLocaleString?.() || ""}</td>
+            <td>${entry.status || ""}</td>
+            <td>${ip}</td>
+            <td>${entry.country || ""}</td>
+            <td>${entry.region || ""}</td>
+            <td>${entry.city || ""}</td>
+            <td>
+              ${ip ? (
+                isBanned
+                  ? `<button onclick="unbanIp('${ip}')">Unban</button>`
+                  : `<button onclick="banIp('${ip}')">Ban</button>`
+              ) : ""}
+            </td>
+            <td>
+              <button onclick="deleteEntry('${docSnap.id}')">Delete</button>
+            </td>
+          `;
+
         tbody.appendChild(row);
       });
     };
@@ -137,6 +141,9 @@
           <th>Timestamp</th>
           <th>Status</th>
           <th>IP</th>
+          <th>Country</th>
+          <th>Region</th>
+          <th>City</th>
           <th>Ban/Unban</th>
           <th>Delete</th>
         </tr>
